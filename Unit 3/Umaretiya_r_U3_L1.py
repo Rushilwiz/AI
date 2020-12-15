@@ -19,7 +19,7 @@ def utility(turn, tc, state):
    for li in tc:
       check_li = [state[x] for x in li]
       if len(set(check_li)) == 1 and check_li[0] != '.':
-         if turn != check_li[0]:
+         if turn == check_li[0]:
             return 1
          else:
             return -1
@@ -32,7 +32,7 @@ def minimax(state, turn, tc):
 def max_value(state, turn, tc):
    # return value and state: (val, state)
    if terminal_test(state, tc):
-      return utility('X' if turn == 'O' else 'O', tc, state), state
+      return utility(turn, tc, state), state
    v = -99999
    result = state
    for curr_state, successor in successors(state, turn):
@@ -47,7 +47,7 @@ def max_value(state, turn, tc):
 def min_value(state, turn, tc):
    # return value and state: (val, state)
    if terminal_test(state, tc):
-      return utility(turn, tc, state), state
+      return utility('X' if turn == 'O' else 'O', tc, state), state
    v = 99999
    result = state
    for curr_state, successor in successors(state, turn):
