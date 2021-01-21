@@ -63,45 +63,44 @@ class SmartBot:
       self.color = color
 
       sd = 4
-      v, best_move = self.alphabeta(board, color, sd, 9999999999, 9999999999)   # returns state
+      v, best_move = self.alphabeta(board, color, sd, -9999999999, 9999999999)   # returns state
 
       return best_move, v
       
-   def alphabeta(self, board, color, search_depth, alpha, beta):
+   def alphabeta(self, board, color, search_depth, alpha, beta, last_move = -1):
       terminal_test = self.terminal_test(board, color)
       if search_depth <= 0 or terminal_test:
          if terminal_test:
             if color == self.color:
-               return 99999999, board
+               return 99999999, last_move
             else:
-               return -99999999, board
+               return -99999999, last_move
          heuristic = self.evaluate(board, color)
-         print("I'm seeing a heuristic of: ", heuristic)
-         return heuristic, board
-      
+         return heuristic, 0
+
       if search_depth % 2 == 0:
          v = -9999999999
-         result = board
+         result = None
          for move in self.find_moves(board, color):
-            max_val, max_state = self.alphabeta(self.make_move(board, color, move), self.opposite_color[color], search_depth - 1, alpha, beta)
-            v = max (v, max_val)
-            result = move
+            max_val, max_state = self.alphabeta(self.make_move(board, color, move), self.opposite_color[color], search_depth - 1, alpha, beta, move)
+            if max_val > v:
+               v = max_val
+               result = move
             if v > beta:
                return v, result
             alpha = max(alpha, v)
-         
          return v, result
       else:
          v = 9999999999
-         result = board
+         result = None
          for move in self.find_moves(board, color):
-            min_val, min_state = self.alphabeta(self.make_move(board, color, move), self.opposite_color[color], search_depth - 1, alpha, beta)
-            v = min (v, min_val)
-            result = move
+            min_val, min_state = self.alphabeta(self.make_move(board, color, move), self.opposite_color[color], search_depth - 1, alpha, beta, move)
+            if min_val < v:
+               v = min_val
+               result = move
             if v < alpha:
                return v, result
-            beta = max(beta, v)
-
+            beta = min(beta, v)
          return v, result
 
    def minimax(self, board, color, search_depth):
@@ -115,11 +114,6 @@ class SmartBot:
    def make_move(self, board, color, move):
       my_board = [row[:] for row in board]
 
-      if color == "#ffff00":
-         color = "O"
-      else:
-         color = "X"
-      
       my_board[move[0]][move[1]] = color
       
       return my_board

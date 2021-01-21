@@ -188,13 +188,14 @@ INSULTS = [
 
 class Strategy:
    def __init__(self):
-      self.logging = True
+      #self.logging = True
       self.white = "o"
       self.black = "x"
       self.directions = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
       self.opposite_color = {self.black: self.white, self.white: self.black}
       self.x_max = None
       self.y_max = None
+      self.color = None
       self.heuristic_table = [
          [999,-3,2,2,2,2,-3,999],
          [-3,-4,-1,-1,-1,-1,-4,-3],
@@ -219,10 +220,11 @@ class Strategy:
       board_arr = self.setup_board(board)
       self.x_max = len(board_arr)
       self.y_max = len(board_arr[0])
+      self.color = player
       
-      stones_left = self.stones_left(board_arr)
+      stones_left = self.stones_left(board)
       if stones_left > 32:
-         sd = 5
+         sd = 6
       elif stones_left > 10:
          sd = 6
       else:
@@ -244,32 +246,35 @@ class Strategy:
       return 1
       
    def alphabeta(self, board, color, search_depth, alpha, beta, last_move=-1):
-      if search_depth <= 0 or self.terminal_test(board):
-         return self.evaluate(board, color, last_move), board
+      terminal_test = self.terminal_test(board)
+      if search_depth <= 0 or terminal_test:
+         if terminal_test:
+            return self.evaluate(board, self.color, last_move) * 1000000, last_move
+         return self.evaluate(board, self.color, last_move), 0
 
       if search_depth % 2 == 0:
          v = -9999999999
-         result = board
+         result = 0
          for move, flipped in self.find_moves(board, color).items():
             max_val, max_state = self.alphabeta(self.make_move(board, color, move, flipped), self.opposite_color[color], search_depth - 1, alpha, beta, move)
-            v = max (v, max_val)
-            result = move
+            if v < max_val:
+               v = max_val
+               result = move
             if v > beta:
                return v, result
             alpha = max(alpha, v)
-         
          return v, result
       else:
          v = 9999999999
-         result = board
+         result = 0
          for move, flipped in self.find_moves(board, color).items():
             min_val, min_state = self.alphabeta(self.make_move(board, color, move, flipped), self.opposite_color[color], search_depth - 1, alpha, beta, move)
-            v = min (v, min_val)
-            result = move
+            if v > min_val:
+               v = min_val
+               result = move
             if v < alpha:
                return v, result
-            beta = max(beta, v)
-
+            beta = min(beta, v)
          return v, result
 
    def terminal_test(self, board):
@@ -297,7 +302,7 @@ class Strategy:
       
       return my_board
 
-   def evaluate(self, board, color, last_move, possible_moves=[]):
+   def evaluate(self, board, color, last_move):
       score = self.score(board, color)
       if last_move != -1:
          heuristic = self.heuristic_table[last_move // self.x_max][last_move % self.y_max]
