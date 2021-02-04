@@ -188,7 +188,7 @@ INSULTS = [
 
 class Strategy:
    def __init__(self):
-      #self.logging = True
+      self.logging = True
       self.white = "o"
       self.black = "x"
       self.directions = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
@@ -254,10 +254,10 @@ class Strategy:
 
       if search_depth % 2 == 0:
          v = -9999999999
-         result = 0
+         result = -123456789
          for move, flipped in self.find_moves(board, color).items():
             max_val, max_state = self.alphabeta(self.make_move(board, color, move, flipped), self.opposite_color[color], search_depth - 1, alpha, beta, move)
-            if v < max_val:
+            if v < max_val or result == -123456789:
                v = max_val
                result = move
             if v > beta:
@@ -266,10 +266,10 @@ class Strategy:
          return v, result
       else:
          v = 9999999999
-         result = 0
+         result = -123456789
          for move, flipped in self.find_moves(board, color).items():
             min_val, min_state = self.alphabeta(self.make_move(board, color, move, flipped), self.opposite_color[color], search_depth - 1, alpha, beta, move)
-            if v > min_val:
+            if v > min_val or result == -123456789:
                v = min_val
                result = move
             if v < alpha:
